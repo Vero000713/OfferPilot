@@ -29,6 +29,18 @@ body {
   min-height: 100vh;
 }
 
+/* any clickable control shows a pointer cursor, disabled ones don't */
+button:not(:disabled),
+[role='button']:not([aria-disabled='true']),
+.ant-picker-calendar-date,
+a {
+  cursor: pointer;
+}
+button:disabled,
+[aria-disabled='true'] {
+  cursor: not-allowed;
+}
+
 @layer components {
   .glass {
     @apply bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/60 dark:border-white/10;
@@ -36,19 +48,64 @@ body {
   .glass-card {
     @apply bg-white/60 dark:bg-white/[0.04] backdrop-blur-xl border border-white/60 dark:border-white/10 rounded-2xl shadow-lg shadow-violet-900/5;
   }
-  .input {
-    @apply rounded-xl border border-violet-200/70 dark:border-violet-400/20 bg-white/70 dark:bg-white/5 backdrop-blur px-3 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-violet-400/60 transition-shadow;
+}
+
+/* ---- Ant Design glassmorphism / purple theme overrides ---- */
+.ant-layout,
+.ant-layout-content {
+  background: transparent !important;
+}
+.ant-layout-header {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+}
+@media (prefers-color-scheme: dark) {
+  .ant-layout-header {
+    background: rgba(20, 16, 32, 0.5) !important;
   }
-  .btn-primary {
-    @apply rounded-xl bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white px-4 py-2 text-sm font-medium shadow-md shadow-violet-500/30 hover:shadow-lg hover:shadow-violet-500/40 hover:from-violet-500 hover:to-fuchsia-400 disabled:opacity-50 disabled:cursor-not-allowed disabled:shadow-none transition-all;
+}
+
+.ant-card,
+.ant-modal-container,
+.ant-drawer-section,
+.ant-picker-calendar,
+.ant-picker-panel {
+  background: rgba(255, 255, 255, 0.6) !important;
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(255, 255, 255, 0.7) !important;
+  border-radius: 16px !important;
+}
+@media (prefers-color-scheme: dark) {
+  .ant-card,
+  .ant-modal-container,
+  .ant-drawer-section,
+  .ant-picker-calendar,
+  .ant-picker-panel {
+    background: rgba(30, 24, 46, 0.55) !important;
+    border: 1px solid rgba(255, 255, 255, 0.08) !important;
   }
-  .btn-secondary {
-    @apply rounded-xl border border-violet-200/70 dark:border-violet-400/20 bg-white/60 dark:bg-white/5 backdrop-blur px-4 py-2 text-sm font-medium text-violet-700 dark:text-violet-200 hover:bg-white/90 dark:hover:bg-white/10 transition-colors;
+}
+
+.ant-input,
+.ant-input-outlined,
+.ant-input-affix-wrapper,
+.ant-select-selector,
+.ant-picker {
+  background: rgba(255, 255, 255, 0.7) !important;
+  border-radius: 10px !important;
+}
+@media (prefers-color-scheme: dark) {
+  .ant-input,
+  .ant-input-outlined,
+  .ant-input-affix-wrapper,
+  .ant-select-selector,
+  .ant-picker {
+    background: rgba(255, 255, 255, 0.06) !important;
   }
-  .chip {
-    @apply px-3 py-1 rounded-full text-xs font-medium border border-violet-200/70 dark:border-violet-400/20 bg-white/50 dark:bg-white/5 text-violet-700 dark:text-violet-200 hover:bg-white/80 dark:hover:bg-white/10 transition-colors;
-  }
-  .chip-active {
-    @apply border-transparent bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white shadow shadow-violet-500/30;
-  }
+}
+
+.ant-modal-mask {
+  backdrop-filter: blur(4px);
 }

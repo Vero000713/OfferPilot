@@ -1,43 +1,55 @@
-import { NavLink, Outlet } from 'react-router-dom'
+import { Layout as AntLayout, Button, Space } from 'antd'
+import { Outlet, useLocation, useNavigate } from 'react-router-dom'
 
-const navItem = 'px-3 py-1.5 rounded-full text-sm font-medium transition-colors'
-const activeClass = 'bg-gradient-to-r from-violet-600 to-fuchsia-500 text-white shadow shadow-violet-500/30'
-const inactiveClass = 'text-violet-700/80 dark:text-violet-200/80 hover:bg-white/60 dark:hover:bg-white/10'
+const NAV_ITEMS = [
+  { path: '/', label: '首页', end: true },
+  { path: '/interviews', label: '面试列表', end: false },
+  { path: '/settings', label: '设置', end: false },
+]
 
 export function Layout() {
+  const location = useLocation()
+  const navigate = useNavigate()
+
   return (
-    <div className="min-h-screen flex flex-col">
-      <header className="sticky top-0 z-40 glass border-x-0 border-t-0">
+    <AntLayout style={{ minHeight: '100vh', background: 'transparent' }}>
+      <AntLayout.Header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 40,
+          padding: 0,
+          height: 'auto',
+          lineHeight: 'normal',
+          borderBottom: '1px solid rgba(255,255,255,0.4)',
+        }}
+      >
         <div className="max-w-5xl mx-auto flex items-center justify-between px-4 py-3">
           <span className="font-semibold text-lg bg-gradient-to-r from-violet-600 to-fuchsia-500 bg-clip-text text-transparent">
-            OfferPilot 面试复盘
+            OfferPilot
           </span>
-          <nav className="flex gap-1.5">
-            <NavLink
-              to="/"
-              end
-              className={({ isActive }) => `${navItem} ${isActive ? activeClass : inactiveClass}`}
-            >
-              首页
-            </NavLink>
-            <NavLink
-              to="/interviews"
-              className={({ isActive }) => `${navItem} ${isActive ? activeClass : inactiveClass}`}
-            >
-              面试列表
-            </NavLink>
-            <NavLink
-              to="/settings"
-              className={({ isActive }) => `${navItem} ${isActive ? activeClass : inactiveClass}`}
-            >
-              设置
-            </NavLink>
-          </nav>
+          <Space size={4}>
+            {NAV_ITEMS.map((item) => {
+              const isActive = item.end ? location.pathname === item.path : location.pathname.startsWith(item.path)
+              return (
+                <Button
+                  key={item.path}
+                  type={isActive ? 'primary' : 'text'}
+                  shape="round"
+                  onClick={() => navigate(item.path)}
+                >
+                  {item.label}
+                </Button>
+              )
+            })}
+          </Space>
         </div>
-      </header>
-      <main className="flex-1 max-w-5xl w-full mx-auto px-4 py-6">
-        <Outlet />
-      </main>
-    </div>
+      </AntLayout.Header>
+      <AntLayout.Content>
+        <div className="max-w-5xl w-full mx-auto px-4 py-6">
+          <Outlet />
+        </div>
+      </AntLayout.Content>
+    </AntLayout>
   )
 }

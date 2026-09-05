@@ -1,4 +1,5 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { Alert, Button, Card, Col, Empty, Input, Row, Typography } from 'antd'
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Calendar } from '../components/Calendar'
@@ -50,39 +51,45 @@ export function HomePage() {
 
   return (
     <div className="space-y-8">
-      <Calendar />
-
-      <section className="glass-card p-5 space-y-3">
-        <h2 className="text-lg font-semibold">面试解析</h2>
-        <p className="text-sm text-slate-500">
-          粘贴一段面试录音转写文本，AI 会自动识别出面试官的问题和你的回答。
-        </p>
-        {!apiKey && (
-          <p className="text-sm text-amber-600 dark:text-amber-400">
-            还没配置 DeepSeek API Key，请先前往{' '}
-            <Link to="/settings" className="underline">
-              设置页
-            </Link>{' '}
-            填写。
-          </p>
-        )}
-        <textarea
-          className="input w-full"
-          rows={10}
-          placeholder="粘贴面试录音转写文本…"
-          value={transcript}
-          onChange={(e) => setTranscript(e.target.value)}
-        />
-        {error && <p className="text-sm text-rose-500">{error}</p>}
-        <button
-          type="button"
-          className="btn-primary"
-          disabled={parsing}
-          onClick={handleParse}
-        >
-          {parsing ? '解析中…' : '开始解析'}
-        </button>
-      </section>
+      <Row gutter={[24, 24]}>
+        <Col xs={24} lg={12}>
+          <Calendar />
+        </Col>
+        <Col xs={24} lg={12}>
+          <Card title="面试解析" className="h-full">
+            <Typography.Text type="secondary">
+              粘贴一段面试录音转写文本，AI 会自动识别出面试官的问题和你的回答。
+            </Typography.Text>
+            {!apiKey && (
+              <Alert
+                className="mt-3"
+                type="warning"
+                showIcon
+                title={
+                  <>
+                    还没配置 DeepSeek API Key，请先前往{' '}
+                    <Link to="/settings" className="underline">
+                      设置页
+                    </Link>{' '}
+                    填写。
+                  </>
+                }
+              />
+            )}
+            <Input.TextArea
+              className="mt-3 mb-3"
+              rows={10}
+              placeholder="粘贴面试录音转写文本…"
+              value={transcript}
+              onChange={(e) => setTranscript(e.target.value)}
+            />
+            {error && <Alert className="mb-3" type="error" showIcon title={error} />}
+            <Button type="primary" loading={parsing} onClick={handleParse}>
+              开始解析
+            </Button>
+          </Card>
+        </Col>
+      </Row>
 
       <section className="space-y-3">
         <div className="flex items-center justify-between">
@@ -91,26 +98,23 @@ export function HomePage() {
             查看全部
           </Link>
         </div>
-        {recentInterviews?.length ? (
-          <ul className="space-y-2">
-            {recentInterviews.map((it) => (
-              <li key={it.id}>
-                <Link
-                  to={`/interviews/${it.id}`}
-                  className="glass-card block px-4 py-2.5 hover:bg-white/80 dark:hover:bg-white/10 transition-colors"
-                >
+        <Card>
+          {recentInterviews && recentInterviews.length > 0 ? (
+            <div className="divide-y divide-black/5 dark:divide-white/10">
+              {recentInterviews.map((it) => (
+                <Link key={it.id} to={`/interviews/${it.id}`} className="block py-2.5 first:pt-0 last:pb-0">
                   <span className="font-medium">{it.company}</span>
                   <span className="text-slate-500">
                     {' '}
                     · {it.department || '部门未填'} · {it.position || '岗位未填'} · {it.round}
                   </span>
                 </Link>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-slate-500">还没有保存过面试记录。</p>
-        )}
+              ))}
+            </div>
+          ) : (
+            <Empty description="还没有保存过面试记录。" />
+          )}
+        </Card>
       </section>
     </div>
   )

@@ -1,3 +1,4 @@
+import { Button, Card, Segmented, Typography } from 'antd'
 import { MASTERY_LEVELS, type Mastery, type QAItem } from '../types/interview'
 import { MasteryBadge } from './MasteryBadge'
 
@@ -10,39 +11,29 @@ interface Props {
 
 export function QACard({ qa, index, onMasteryChange, onLocate }: Props) {
   return (
-    <div className="glass-card p-4 space-y-2">
-      <div className="flex items-start justify-between gap-2">
-        <div className="font-medium text-slate-900 dark:text-slate-100">
+    <Card size="small">
+      <div className="flex items-start justify-between gap-2 mb-2">
+        <Typography.Text strong>
           Q{index + 1}. {qa.question}
-        </div>
+        </Typography.Text>
         <MasteryBadge mastery={qa.mastery} />
       </div>
-      <p className="text-sm text-slate-600 dark:text-slate-300 whitespace-pre-wrap">
+      <Typography.Paragraph type="secondary" className="!mb-3 whitespace-pre-wrap">
         {qa.answer}
-      </p>
-      <div className="flex items-center justify-between pt-1">
-        <div className="flex gap-1.5">
-          {MASTERY_LEVELS.map((level) => (
-            <button
-              key={level}
-              type="button"
-              onClick={() => onMasteryChange(level)}
-              className={`chip ${qa.mastery === level ? 'chip-active' : ''}`}
-            >
-              {level}
-            </button>
-          ))}
-        </div>
+      </Typography.Paragraph>
+      <div className="flex items-center justify-between">
+        <Segmented
+          size="small"
+          value={qa.mastery ?? undefined}
+          options={[...MASTERY_LEVELS]}
+          onChange={(value) => onMasteryChange(value as Mastery)}
+        />
         {onLocate && qa.sourceQuote && (
-          <button
-            type="button"
-            onClick={onLocate}
-            className="text-xs text-violet-600 dark:text-violet-300 hover:underline"
-          >
+          <Button type="link" size="small" onClick={onLocate}>
             定位原文
-          </button>
+          </Button>
         )}
       </div>
-    </div>
+    </Card>
   )
 }

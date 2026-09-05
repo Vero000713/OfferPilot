@@ -1,81 +1,85 @@
 import { useLiveQuery } from 'dexie-react-hooks'
+import { Button, Card, DatePicker, Form, Input, message, Modal, Popconfirm, Segmented, Select, Typography } from 'antd'
+import dayjs from 'dayjs'
 import { useMemo, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { QACard } from '../components/QACard'
 import { TranscriptDrawer } from '../components/TranscriptDrawer'
 import { db } from '../db/db'
+import { formatDateKey } from '../lib/date'
 import { INTERVIEW_ROUNDS, MASTERY_LEVELS, type Interview, type InterviewRound, type Mastery } from '../types/interview'
 
-function EditMetaForm({
+interface MetaFormValues {
+  company: string
+  department?: string
+  position?: string
+  round: InterviewRound
+  date: dayjs.Dayjs
+}
+
+function EditMetaModal({
   interview,
-  onSaved,
-  onCancel,
+  open,
+  onClose,
 }: {
   interview: Interview
-  onSaved: () => void
-  onCancel: () => void
+  open: boolean
+  onClose: () => void
 }) {
-  const [company, setCompany] = useState(interview.company)
-  const [department, setDepartment] = useState(interview.department)
-  const [position, setPosition] = useState(interview.position)
-  const [round, setRound] = useState<InterviewRound>(interview.round)
-  const [date, setDate] = useState(interview.date)
+  const [form] = Form.useForm<MetaFormValues>()
 
-  async function handleSave() {
-    if (!company.trim()) {
-      alert('公司不能为空')
-      return
-    }
+  async function handleSave(values: MetaFormValues) {
     await db.interviews.update(interview.id, {
-      company: company.trim(),
-      department: department.trim(),
-      position: position.trim(),
-      round,
-      date,
+      company: values.company.trim(),
+      department: values.department?.trim() ?? '',
+      position: values.position?.trim() ?? '',
+      round: values.round,
+      date: formatDateKey(values.date.toDate()),
       updatedAt: Date.now(),
     })
-    onSaved()
+    message.success('已保存')
+    onClose()
   }
 
   return (
-    <div className="glass-card p-4 space-y-3">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <input className="input" placeholder="公司 *" value={company} onChange={(e) => setCompany(e.target.value)} />
-        <input
-          className="input"
-          placeholder="部门（选填）"
-          value={department}
-          onChange={(e) => setDepartment(e.target.value)}
-        />
-        <input
-          className="input"
-          placeholder="岗位（选填）"
-          value={position}
-          onChange={(e) => setPosition(e.target.value)}
-        />
-        <select className="input" value={round} onChange={(e) => setRound(e.target.value as InterviewRound)}>
-          {INTERVIEW_ROUNDS.map((r) => (
-            <option key={r} value={r}>
-              {r}
-            </option>
-          ))}
-        </select>
-        <input
-          type="date"
-          className="input col-span-2 sm:col-span-1"
-          value={date}
-          onChange={(e) => setDate(e.target.value)}
-        />
-      </div>
-      <div className="flex gap-3">
-        <button type="button" className="btn-primary" onClick={handleSave}>
-          保存
-        </button>
-        <button type="button" className="btn-secondary" onClick={onCancel}>
-          取消
-        </button>
-      </div>
-    </div>
+    <Modal
+      title="编辑面试信息"
+      open={open}
+      onCancel={onClose}
+      onOk={() => form.submit()}
+      okText="保存"
+      cancelText="取消"
+      destroyOnHidden
+    >
+      <Form
+        form={form}
+        layout="vertical"
+        onFinish={handleSave}
+        initialValues={{
+          company: interview.company,
+          department: interview.department,
+          position: interview.position,
+          round: interview.round,
+          date: dayjs(interview.date),
+        }}
+      >
+        <Form.Item name="company" label="公司" rules={[{ required: true, message: '请输入公司名称' }]}>
+          <Input placeholder="公司" />
+        </Form.Item>
+        <Form.Item name="department" label="部门（选填）">
+          <Input placeholder="部门" />
+        </Form.Item>
+        <Form.Item name="position" label="岗位（选填）">
+          <Input placeholder="岗位" />
+        </Form.Item>
+        <Form.Item name="round" label="轮次" rules={[{ required: true }]}>
+          <Select options={INTERVIEW_ROUNDS.map((r) => ({ label: r, value: r }))} />
+        </Form.Item>
+        <Form.Item name="date" label="日期" rules={[{ required: true }]}>
+          <DatePicker className="w-full" />
+        </Form.Item>
+      </Form>
+    </Modal>
   )
 }
 
@@ -85,7 +89,7 @@ export function InterviewDetailPage() {
   const [masteryFilter, setMasteryFilter] = useState<Mastery | 'all'>('all')
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [highlight, setHighlight] = useState<string | undefined>(undefined)
-  const [editing, setEditing] = useState(false)
+  const [editModalOpen, setEditModalOpen] = useState(false)
 
   const interview = useLiveQuery(
     () => (id ? db.interviews.get(id) : undefined),
@@ -111,18 +115,18 @@ export function InterviewDetailPage() {
 
   async function handleDelete() {
     if (!interview) return
-    if (!confirm('确定要删除这场面试记录吗？此操作不可撤销。')) return
     await db.interviews.delete(interview.id)
     navigate('/interviews')
   }
 
   if (interview === undefined) {
-    return <p className="text-sm text-slate-500">加载中…</p>
+    return <Typography.Text type="secondary">加载中…</Typography.Text>
   }
   if (interview === null || !interview) {
     return (
       <div className="space-y-3">
-        <p className="text-sm text-slate-500">没有找到这场面试记录。</p>
+        <Typography.Text type="secondary">没有找到这场面试记录。</Typography.Text>
+        <br />
         <Link to="/interviews" className="text-violet-600 dark:text-violet-300 hover:underline">
           返回面试列表
         </Link>
@@ -130,60 +134,46 @@ export function InterviewDetailPage() {
     )
   }
 
-  if (editing) {
-    return (
-      <div className="space-y-5">
-        <h2 className="text-lg font-semibold">编辑面试信息</h2>
-        <EditMetaForm interview={interview} onSaved={() => setEditing(false)} onCancel={() => setEditing(false)} />
-      </div>
-    )
-  }
+  const segmentedOptions = [
+    { label: `全部 (${interview.qaList.length})`, value: 'all' },
+    ...MASTERY_LEVELS.map((level) => ({
+      label: `${level} (${interview.qaList.filter((qa) => qa.mastery === level).length})`,
+      value: level,
+    })),
+  ]
 
   return (
     <div className="space-y-5">
-      <div className="glass-card p-4 flex items-start justify-between">
-        <div>
-          <h2 className="text-xl font-semibold">{interview.company}</h2>
-          <p className="text-sm text-slate-500">
-            {interview.department || '部门未填'} · {interview.position || '岗位未填'} · {interview.round} ·{' '}
-            {interview.date}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <button type="button" className="btn-secondary" onClick={() => setEditing(true)}>
-            编辑信息
-          </button>
-          <button type="button" className="btn-secondary" onClick={() => setDrawerOpen(true)}>
-            查看原文
-          </button>
-          <button type="button" className="text-sm text-rose-500 hover:underline px-1" onClick={handleDelete}>
-            删除
-          </button>
-        </div>
-      </div>
-
-      <div className="flex flex-wrap gap-2">
-        <button
-          type="button"
-          onClick={() => setMasteryFilter('all')}
-          className={`chip ${masteryFilter === 'all' ? 'chip-active' : ''}`}
-        >
-          全部 ({interview.qaList.length})
-        </button>
-        {MASTERY_LEVELS.map((level) => {
-          const count = interview.qaList.filter((qa) => qa.mastery === level).length
-          return (
-            <button
-              key={level}
-              type="button"
-              onClick={() => setMasteryFilter(level)}
-              className={`chip ${masteryFilter === level ? 'chip-active' : ''}`}
+      <Card>
+        <div className="flex items-start justify-between">
+          <div>
+            <h2 className="text-xl font-semibold">{interview.company}</h2>
+            <Typography.Text type="secondary">
+              {interview.department || '部门未填'} · {interview.position || '岗位未填'} · {interview.round} ·{' '}
+              {interview.date}
+            </Typography.Text>
+          </div>
+          <div className="flex gap-2">
+            <Button onClick={() => setEditModalOpen(true)}>编辑信息</Button>
+            <Button onClick={() => setDrawerOpen(true)}>查看原文</Button>
+            <Popconfirm
+              title="确定要删除这场面试记录吗？"
+              description="此操作不可撤销。"
+              onConfirm={handleDelete}
+              okText="删除"
+              cancelText="取消"
             >
-              {level} ({count})
-            </button>
-          )
-        })}
-      </div>
+              <Button danger>删除</Button>
+            </Popconfirm>
+          </div>
+        </div>
+      </Card>
+
+      <Segmented
+        value={masteryFilter}
+        onChange={(v) => setMasteryFilter(v as Mastery | 'all')}
+        options={segmentedOptions}
+      />
 
       <div className="space-y-3">
         {filteredQA.map((qa) => {
@@ -202,7 +192,7 @@ export function InterviewDetailPage() {
           )
         })}
         {filteredQA.length === 0 && (
-          <p className="text-sm text-slate-500">这个筛选条件下没有问答。</p>
+          <Typography.Text type="secondary">这个筛选条件下没有问答。</Typography.Text>
         )}
       </div>
 
@@ -215,6 +205,8 @@ export function InterviewDetailPage() {
         transcript={interview.rawTranscript}
         highlight={highlight}
       />
+
+      <EditMetaModal interview={interview} open={editModalOpen} onClose={() => setEditModalOpen(false)} />
     </div>
   )
 }
