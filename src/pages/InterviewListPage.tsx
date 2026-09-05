@@ -26,7 +26,7 @@ export function InterviewListPage() {
     <div className="space-y-4">
       <h2 className="text-lg font-semibold">面试列表</h2>
 
-      <div className="flex flex-wrap gap-3">
+      <div className="glass-card p-4 flex flex-wrap gap-3">
         <input
           className="input"
           placeholder="按公司搜索…"
@@ -56,14 +56,14 @@ export function InterviewListPage() {
           <li key={it.id}>
             <Link
               to={`/interviews/${it.id}`}
-              className="block rounded-lg border border-slate-200 dark:border-slate-800 p-4 hover:bg-slate-100 dark:hover:bg-slate-800/60 space-y-1"
+              className="glass-card block p-4 hover:bg-white/80 dark:hover:bg-white/10 transition-colors space-y-1"
             >
               <div className="font-medium">{it.company}</div>
               <div className="text-sm text-slate-500">
-                {it.department} · {it.position}
+                {it.department || '部门未填'} · {it.position || '岗位未填'}
               </div>
               <div className="flex items-center justify-between pt-1">
-                <span className="px-2 py-0.5 rounded-full text-xs bg-indigo-100 text-indigo-700 dark:bg-indigo-900/40 dark:text-indigo-300">
+                <span className="px-2 py-0.5 rounded-full text-xs bg-violet-100/80 text-violet-700 dark:bg-violet-400/10 dark:text-violet-300">
                   {it.round}
                 </span>
                 <span className="text-xs text-slate-400">{it.date}</span>

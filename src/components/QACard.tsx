@@ -10,7 +10,7 @@ interface Props {
 
 export function QACard({ qa, index, onMasteryChange, onLocate }: Props) {
   return (
-    <div className="rounded-lg border border-slate-200 dark:border-slate-800 p-4 space-y-2">
+    <div className="glass-card p-4 space-y-2">
       <div className="flex items-start justify-between gap-2">
         <div className="font-medium text-slate-900 dark:text-slate-100">
           Q{index + 1}. {qa.question}
@@ -27,11 +27,7 @@ export function QACard({ qa, index, onMasteryChange, onLocate }: Props) {
               key={level}
               type="button"
               onClick={() => onMasteryChange(level)}
-              className={`px-2 py-1 rounded text-xs border transition-colors ${
-                qa.mastery === level
-                  ? 'border-indigo-500 bg-indigo-500 text-white'
-                  : 'border-slate-300 text-slate-600 hover:bg-slate-100 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800'
-              }`}
+              className={`chip ${qa.mastery === level ? 'chip-active' : ''}`}
             >
               {level}
             </button>
@@ -41,7 +37,7 @@ export function QACard({ qa, index, onMasteryChange, onLocate }: Props) {
           <button
             type="button"
             onClick={onLocate}
-            className="text-xs text-indigo-600 dark:text-indigo-400 hover:underline"
+            className="text-xs text-violet-600 dark:text-violet-300 hover:underline"
           >
             定位原文
           </button>

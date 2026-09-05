@@ -1,4 +1,4 @@
-export const INTERVIEW_ROUNDS = ['一面', '二面', '三面', 'HR面'] as const
+export const INTERVIEW_ROUNDS = ['一面', '二面', '三面', 'HR面', 'AI面', '其他'] as const
 export type InterviewRound = (typeof INTERVIEW_ROUNDS)[number]
 
 export const MASTERY_LEVELS = ['熟练', '一般', '不熟'] as const

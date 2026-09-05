@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { v4 as uuid } from 'uuid'
 import { db } from '../db/db'
+import { formatDateKey } from '../lib/date'
 import type { ParsedQA } from '../services/deepseekParser'
 import { INTERVIEW_ROUNDS, type Interview, type InterviewRound, type QAItem } from '../types/interview'
 
@@ -16,7 +17,7 @@ export function ParseReviewForm({ rawTranscript, parsedQA, onSaved, onCancel }: 
   const [department, setDepartment] = useState('')
   const [position, setPosition] = useState('')
   const [round, setRound] = useState<InterviewRound>('一面')
-  const [date, setDate] = useState(() => new Date().toISOString().slice(0, 10))
+  const [date, setDate] = useState(() => formatDateKey(new Date()))
   const [qaItems, setQaItems] = useState<QAItem[]>(() =>
     parsedQA.map((qa) => ({
       id: uuid(),
@@ -38,8 +39,8 @@ export function ParseReviewForm({ rawTranscript, parsedQA, onSaved, onCancel }: 
   }
 
   async function handleSave() {
-    if (!company.trim() || !position.trim()) {
-      alert('请至少填写公司和岗位')
+    if (!company.trim()) {
+      alert('请至少填写公司名称，其他信息可以之后在详情页补充')
       return
     }
     setSaving(true)
@@ -63,22 +64,22 @@ export function ParseReviewForm({ rawTranscript, parsedQA, onSaved, onCancel }: 
 
   return (
     <div className="space-y-6">
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="glass-card p-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
         <input
           className="input"
-          placeholder="公司"
+          placeholder="公司 *"
           value={company}
           onChange={(e) => setCompany(e.target.value)}
         />
         <input
           className="input"
-          placeholder="部门"
+          placeholder="部门（选填）"
           value={department}
           onChange={(e) => setDepartment(e.target.value)}
         />
         <input
           className="input"
-          placeholder="岗位"
+          placeholder="岗位（选填）"
           value={position}
           onChange={(e) => setPosition(e.target.value)}
         />
@@ -100,16 +101,16 @@ export function ParseReviewForm({ rawTranscript, parsedQA, onSaved, onCancel }: 
           onChange={(e) => setDate(e.target.value)}
         />
       </div>
+      <p className="text-xs text-slate-500 -mt-3">
+        只有公司是必填的，部门/岗位可以先留空，保存后随时可以在详情页编辑补充。
+      </p>
 
       <div className="space-y-3">
         <h3 className="font-medium">
           解析出 {qaItems.length} 条问答，请检查并按需修改后保存
         </h3>
         {qaItems.map((qa, idx) => (
-          <div
-            key={qa.id}
-            className="rounded-lg border border-slate-200 dark:border-slate-800 p-3 space-y-2"
-          >
+          <div key={qa.id} className="glass-card p-3 space-y-2">
             <div className="flex items-center justify-between">
               <span className="text-xs text-slate-500">
                 #{idx + 1} {qa.speaker ? `· ${qa.speaker}` : ''}
